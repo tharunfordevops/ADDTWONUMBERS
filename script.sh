@@ -3,7 +3,7 @@
 # GitHub API URL
 API_URL="https://api.github.com"
 
-# GitHub username and personal access token
+# GitHub username and personal access token (set these as env variables)
 USERNAME=$username
 TOKEN=$token
 
@@ -11,11 +11,18 @@ TOKEN=$token
 REPO_OWNER=$1
 REPO_NAME=$2
 
+# --- FUNCTIONS ---
 
-validate_args()
+# Helper function to check if two arguments are passed
+validate_args() {
+    if [ $# -ne 2 ]; then
+        echo "Error: Please enter repository owner and repository name."
+        exit 1
+    fi
+}
 
 # Function to make a GET request to the GitHub API (issues only)
-function github_api_get_issues() {
+github_api_get_issues() {
     local org="$1"
     local repo="$2"
     local endpoint="repos/${org}/${repo}/issues"
@@ -29,11 +36,9 @@ function github_api_get_issues() {
 }
 
 # Function to list issues on a repository inside an organization
-function list_repo_issues() {
-    local endpoint="repos/${REPO_OWNER}/${REPO_NAME}/issues"
-
-    # Fetch the list of issues
-    issues="$(github_api_get "$endpoint")"
+list_repo_issues() {
+    local issues
+    issues="$(github_api_get_issues "$REPO_OWNER" "$REPO_NAME")"
 
     # Display the list of issues
     if [[ -z "$issues" ]]; then
@@ -44,16 +49,10 @@ function list_repo_issues() {
     fi
 }
 
-
-# Helper function to check if two arguments are passed
-function validate_args() {
-    if [ $# -ne 2 ]; then
-        echo "Error: Please enter two numbers"
-        exit 1
-    fi
-}
-
-
 # --- MAIN EXECUTION ---
+
+# Validate arguments
+validate_args "$1" "$2"
+
 echo "Fetching issues for $REPO_OWNER/$REPO_NAME ..."
-github_api_get_issues "$REPO_OWNER" "$REPO_NAME"
+list_repo_issues
